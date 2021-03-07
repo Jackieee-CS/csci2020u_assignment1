@@ -23,13 +23,15 @@ public class WordCounter{
 		}else{
 			Scanner scanner = new Scanner(file);
 			// scanning token by token
+			Set<String> keys = new HashSet<>();
 			while (scanner.hasNext()){
-				String  token = scanner.next();
+				String token = scanner.next();
 				if (isValidWord(token)){
-					countWord(token);
+					keys.add(token);
 				}
-			}	
-		}		
+			}
+			countWord(keys);
+		}
 		
 	}
 	
@@ -40,13 +42,20 @@ public class WordCounter{
 			
 	}
 	
-	private void countWord(String word){
-		if(wordCounts.containsKey(word)){
-			int previous = wordCounts.get(word);
-			wordCounts.put(word, previous+1);
-		}else{
-			wordCounts.put(word, 1);
+	private void countWord(Set keys){
+		Iterator<String> keyIterator = keys.iterator();
+		int sum;
+		while(keyIterator.hasNext()){
+			String key = keyIterator.next();
+			if(wordCounts.containsKey(key)){
+				int previous = wordCounts.get(key);
+				wordCounts.put(key, previous+1);
+			}else{
+				wordCounts.put(key, 1);
+
+			}
 		}
+
 	}
 	
 	public void outputWordCount(int minCount, File output) throws IOException{
@@ -57,10 +66,9 @@ public class WordCounter{
 			output.createNewFile();
 			if (output.canWrite()){
 				PrintWriter fileOutput = new PrintWriter(output);
-				
+
 				Set<String> keys = wordCounts.keySet();
 				Iterator<String> keyIterator = keys.iterator();
-				
 				while(keyIterator.hasNext()){
 					String key = keyIterator.next();
 					int count = wordCounts.get(key);
@@ -69,7 +77,7 @@ public class WordCounter{
 						fileOutput.println(key + ": " + count);
 					}
 				}
-				
+
 				fileOutput.close();
 			}
 		}else{
@@ -93,7 +101,7 @@ public class WordCounter{
 		System.out.println("Hello");
 		try{
 			wordCounter.parseFile(dataDir);
-			wordCounter.outputWordCount(2, outFile);
+			wordCounter.outputWordCount(1, outFile);
 		}catch(FileNotFoundException e){
 			System.err.println("Invalid input dir: " + dataDir.getAbsolutePath());
 			e.printStackTrace();
