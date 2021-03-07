@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 
 public class WordCounter{
@@ -15,26 +16,55 @@ public class WordCounter{
 	public WordCounter(){
 		wordCounts = new TreeMap<>();
 	}
-/*
+
+	// Written code to individually parse seperate directories within one folder, and generate different output.txt's per directory
 	public void parseDir(String pathToDir) throws IOException{
-		try (Stream<Path> paths = Files.walk(Paths.get(pathToDir), 1)) {
-			if(Files.isDirectory() == true){
-				System.out.println();
+
+		List<Path> result;
+		// Tells the function to go through the whole path in the directory
+		try (Stream<Path> paths = Files.walk(Paths.get(pathToDir), 0)) {
+
+			result = paths.filter(Files::isDirectory).collect(Collectors.toList());
+
+			// Testing variable (not used)
+			int x = 0;
+
+			for(Path path : result){
+				System.out.println("value of x is " + x);
+				System.out.println("Current File Path is " + path.toString());
+				File currentDir = new File(path.toString());
+				String[] dirNames = currentDir.list();
+
+				// Checks for if directories are directories, and if true, does some stuff to them
+				// Currently parses them if they are directories and outputs their words + occurences in their own output.txt
+				// The summation of the words is still buggy (it adds all the words over the WHOLE directory still
+				for(String dirs : dirNames){
+					if(new File(pathToDir + dirs).isDirectory()){
+
+						// Edit this section if you have your own ideas of what you want to do with the sub-directions!!!
+						// --------------------- IMPORTANT -------------------
+
+						File current = new File(pathToDir+dirs);
+						System.out.println("The Current path is " + pathToDir + dirs);
+						parseFile(current);
+						File outDir = new File (pathToDir+dirs+".txt");
+						System.out.println("Output file is " + pathToDir+dirs+".txt");
+						outputWordCount(1, outDir);
+					}
+				}
+
+
+				x++;
 			}
 
 
-
-			paths.filter(Files::isDirectory).forEach(System.out::println);
 		}
 
 	}
-*/
 
 
-	
 	public void parseFile(File file) throws IOException{
-		System.out.println("Starting parsing the file:" + file.getAbsolutePath());
-		
+		//System.out.println("Starting parsing the file:" + file.getAbsolutePath());
 		if(file.isDirectory()){
 			//parse each file inside the directory
 			File[] content = file.listFiles();
@@ -114,18 +144,19 @@ public class WordCounter{
 			System.err.println("Usage: java WordCounter <inputDir> <outfile>");
 			System.exit(0);
 		}
-		
+
+		String pathDir = args[0];
 		File dataDir = new File(args[0]);
 		//File dataDir2 = new File(args[1]);
 		//File dataDir3 = new File(args[2]);
-		File outFile = new File(args[3]);
+		File outFile = new File(args[1]);
 		
 		WordCounter wordCounter = new WordCounter();
 		System.out.println("Hello");
 		try{
-			//wordCounter.parseDir(pathDir);
-			wordCounter.parseFile(dataDir);
-			wordCounter.outputWordCount(1, outFile);
+			wordCounter.parseDir(pathDir);
+			//wordCounter.parseFile(dataDir);
+			//wordCounter.outputWordCount(1, outFile);
 		}catch(FileNotFoundException e){
 			System.err.println("Invalid input dir: " + dataDir.getAbsolutePath());
 			e.printStackTrace();
