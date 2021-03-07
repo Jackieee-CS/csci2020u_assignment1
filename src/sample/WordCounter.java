@@ -1,6 +1,11 @@
 package sample;
 import java.io.*;
 import java.util.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 
 public class WordCounter{
@@ -10,6 +15,22 @@ public class WordCounter{
 	public WordCounter(){
 		wordCounts = new TreeMap<>();
 	}
+/*
+	public void parseDir(String pathToDir) throws IOException{
+		try (Stream<Path> paths = Files.walk(Paths.get(pathToDir), 1)) {
+			if(Files.isDirectory() == true){
+				System.out.println();
+			}
+
+
+
+			paths.filter(Files::isDirectory).forEach(System.out::println);
+		}
+
+	}
+*/
+
+
 	
 	public void parseFile(File file) throws IOException{
 		System.out.println("Starting parsing the file:" + file.getAbsolutePath());
@@ -87,13 +108,18 @@ public class WordCounter{
 		}
 		
 		File dataDir = new File(args[0]);
-		File outFile = new File(args[1]);		
+		//File dataDir2 = new File(args[1]);
+		//File dataDir3 = new File(args[2]);
+		File outFile = new File(args[3]);
 		
 		WordCounter wordCounter = new WordCounter();
 		System.out.println("Hello");
 		try{
+			//wordCounter.parseDir(pathDir);
 			wordCounter.parseFile(dataDir);
-			wordCounter.outputWordCount(2, outFile);
+			//wordCounter.parseFile(dataDir2);
+			//wordCounter.parseFile(dataDir3);
+			wordCounter.outputWordCount(1, outFile);
 		}catch(FileNotFoundException e){
 			System.err.println("Invalid input dir: " + dataDir.getAbsolutePath());
 			e.printStackTrace();
