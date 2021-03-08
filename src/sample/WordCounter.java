@@ -19,7 +19,12 @@ public class WordCounter{
 	TreeMap<String, Integer> hamCounts = new TreeMap<String, Integer>();
 	TreeMap<String, Integer> ham2Counts = new TreeMap<String, Integer>();
 	TreeMap<String, Integer> spamCounts = new TreeMap<String, Integer>();
+	TreeMap<String, Double> mergedHamProb = new TreeMap<String, Double>();
+	TreeMap<String, Double> probWisSpam = new TreeMap<String, Double>();
+	TreeMap<String, Double> spamProb = new TreeMap<String, Double>();
 	DecimalFormat df = new DecimalFormat("0.00000");
+	double prSF = 0;
+	double n = 0;
 	int hamSize = 0;
 	int spamSize = 0;
 
@@ -47,7 +52,6 @@ public class WordCounter{
 		return mergedMap;
 	}
 
-
 	// Written code to individually parse seperate directories within one folder, and generate different output.txt's per directory
 	public void parseDir(String pathToDir) throws IOException{
 
@@ -73,27 +77,27 @@ public class WordCounter{
 						// Edit this section if you have your own ideas of what you want to do with the sub-directions!!!
 						// --------------------- IMPORTANT -------------------
 
-						if(x == 0) {
+						if(x == 0 && dirs.contains("ham")) {
 							File current = new File(pathToDir + dirs);
 							hamSize += current.list().length;
 							System.out.println("The Current path is " + pathToDir + dirs);
 							wordCounts.clear();
 							parseFile(current);
 							File outDir = new File(pathToDir + dirs + ".txt");
-							System.out.println("Output file is " + pathToDir + dirs + ".txt");
+							//System.out.println("Output file is " + pathToDir + dirs + ".txt");
 							outputWordCount(1, outDir);
 							//System.out.println("Size of wordCounts is " + wordCounts.size());
 							hamCounts.putAll(wordCounts);
 							//System.out.println("Size of hamCounts is" + hamCounts.size());
 						}
-						else if(x == 1){
+						else if(x == 1 && dirs.contains("ham")){
 							File current = new File(pathToDir+dirs);
 							hamSize += current.list().length;
 							System.out.println("The Current path is " + pathToDir + dirs);
 							wordCounts.clear();
 							parseFile(current);
 							File outDir = new File (pathToDir+dirs+".txt");
-							System.out.println("Output file is " + pathToDir+dirs+".txt");
+							//System.out.println("Output file is " + pathToDir+dirs+".txt");
 							outputWordCount(1, outDir);
 							//System.out.println("Size of wordCounts is " + wordCounts.size());
 							ham2Counts.putAll(wordCounts);
@@ -107,7 +111,7 @@ public class WordCounter{
 							wordCounts.clear();
 							parseFile(current);
 							File outDir = new File (pathToDir+dirs+".txt");
-							System.out.println("Output file is " + pathToDir+dirs+".txt");
+							//System.out.println("Output file is " + pathToDir+dirs+".txt");
 							outputWordCount(1, outDir);
 							//System.out.println("Size of wordCounts is " + wordCounts.size());
 							spamCounts.putAll(wordCounts);
@@ -124,29 +128,20 @@ public class WordCounter{
 
 		}
 
-
-
 		TreeMap<String, Integer> mergedHam = merge(hamCounts,ham2Counts);
-		TreeMap<String, Double> mergedHamProb = new TreeMap<String, Double>();
-
 		Set<String> mergedHamSet = mergedHam.keySet();
 		Iterator<String> mergedHamIterator = mergedHamSet.iterator();
 		while (mergedHamIterator.hasNext()) {
 			String key = mergedHamIterator.next();
 			if(mergedHam.containsKey(key)){
 				int previous = mergedHam.get(key);
-				//System.out.println("Previous value is " + previous);
-				//System.out.println("TOTAL HAM COUNT IS " + totalHamCount);
-				double prob = (double) previous/hamSize;
-				//System.out.println("Merged HAM Probability is " + df.format(prob));
+				double prob = (double) previous/hamSize;;
 				mergedHamProb.put(key, prob);
 			}else{
-				mergedHamProb.put(key, 1.0);
+				mergedHamProb.put(key, 0.0);
 			}
 
 		}
-
-		TreeMap<String, Double> spamProb = new TreeMap<String, Double>();
 
 		Set<String> spamSet = spamCounts.keySet();
 		Iterator<String> spamIterator = spamSet.iterator();
@@ -154,60 +149,41 @@ public class WordCounter{
 			String key = spamIterator.next();
 			if(spamCounts.containsKey(key)){
 				int previous = spamCounts.get(key);
-				//System.out.println("Previous value is " + previous);
-				//System.out.println("TOTAL HAM COUNT IS " + totalHamCount);
-				DecimalFormat df = new DecimalFormat("0.00000");
 				double prob = (double) previous/spamSize;
-				//System.out.println("SPAM Probability is " + df.format(prob));
 				spamProb.put(key, prob);
 			}else{
-				spamProb.put(key, 1.0);
+				spamProb.put(key, 0.0);
 			}
 
 		}
 
-		System.out.println("hamSize is " + hamSize);
-		System.out.println("spamSize is " + spamSize);
 
-
-		TreeMap<String, Double> probWisSpam = new TreeMap<String, Double>();
 		probWisSpam.putAll(mergedHamProb);
-
-		while (mergedHamIterator.hasNext()) {
-			String key = mergedHamIterator.next();
-			if(probWisSpam.containsKey(key)){
-				double previous = probWisSpam.get(key);
-				//System.out.println("Previous value is " + previous);
-				//System.out.println("TOTAL HAM COUNT IS " + totalHamCount);
-
-				double prob = (double) spamCounts.get(key) / (spamCounts.get(key) + mergedHamProb.get(key));
-				//System.out.println("Merged HAM Probability is " + df.format(prob));
+		Set<String> probWisSpamSet = probWisSpam.keySet();
+		Iterator<String> probWisIterator = probWisSpamSet.iterator();
+		while (probWisIterator.hasNext()) {
+			String key = probWisIterator.next();
+			if(probWisSpam.containsKey(key) && spamProb.containsKey(key)){
+				double prob = spamProb.get(key) / (spamProb.get(key) + probWisSpam.get(key));
+				//System.out.println("PrSW is " + df.format(prob));
 				probWisSpam.put(key, prob);
-			}else{
+			}else if (probWisSpam.containsKey(key) && !spamProb.containsKey(key)){
+				probWisSpam.put(key, 0.0);
+			}else {
 				probWisSpam.put(key, 1.0);
 			}
 		}
 
 
 		System.out.println("The size of ProbWisSpam is " + probWisSpam.size());
-
+/*
 		for (Map.Entry<String, Double> word : probWisSpam.entrySet()) {
 			String key = word.getKey();
 			Double value = word.getValue();
 			System.out.println("The key is " + key + " and the probability is " + df.format(value));
 		}
-
-
-	}
-/*
-	public void getProb(Set<String> probMap){
-		double n = 0;
-		for(int i = 0; i < probMap.size(); i++){
-			n += (Math.log((1-prSW)) - Math.log(prSW))
-		}
-	}
 */
-
+	}
 
 	public void parseFile(File file) throws IOException{
 		//System.out.println("Starting parsing the file:" + file.getAbsolutePath());
@@ -218,6 +194,7 @@ public class WordCounter{
 				parseFile(current);
 			}
 		}else{
+			//System.out.println("Test File " + file.toString());
 			Scanner scanner = new Scanner(file);
 			// scanning token by token
 			Set<String> keys = new HashSet<>();
@@ -231,6 +208,33 @@ public class WordCounter{
 		}
 		
 	}
+
+	//Function used to parse 2nd directory and calculate probability of spam
+	// This section also needs work
+
+
+	public void parseFileProb(File file) throws IOException{
+		//System.out.println("Starting parsing the file:" + file.getAbsolutePath());
+		if(file.isDirectory()){
+			//parse each file inside the directory
+			File[] content = file.listFiles();
+			for(File current: content){
+				parseFileProb(current);
+			}
+		}else{
+			Scanner scanner2 = new Scanner(file);
+			// scanning token by token
+			Set<String> keys = new HashSet<>();
+			while (scanner2.hasNext()){
+				String token = scanner2.next();
+				if (isValidWord(token)){
+					keys.add(token);
+				}
+			}
+			calcProb(keys);
+			//System.out.println("File " + file.toString() + " has a prSF of" + df.format(prSF));
+		}
+	}
 	
 	private boolean isValidWord(String word){
 		String allLetters = "^[a-zA-Z]+$";
@@ -238,7 +242,34 @@ public class WordCounter{
 		return word.matches(allLetters);
 			
 	}
-	
+
+
+	// This section Needs work
+	// The math is incorrect I believe
+
+	private void calcProb(Set keys){
+		prSF = 0;
+		Iterator<String> keyIterator = keys.iterator();
+		while(keyIterator.hasNext()) {
+			String key = keyIterator.next();
+			if(probWisSpam.containsKey(key)){
+				if(probWisSpam.get(key) == 0){
+
+				}else{
+					System.out.println("ProbwiSpam at this key is " + probWisSpam.get(key));
+					n += Math.log(1-(probWisSpam.get(key))) - Math.log(probWisSpam.get(key));
+					System.out.println("doing big math n is " + n);
+				}
+
+			}
+		}
+		prSF = 1/(1+( Math.pow(Math.E,n)));
+		System.out.println("calculated PRSF is " + prSF);
+
+	}
+
+
+
 	private void countWord(Set keys){
 		Iterator<String> keyIterator = keys.iterator();
 		while(keyIterator.hasNext()){
@@ -291,15 +322,19 @@ public class WordCounter{
 		}
 
 		String pathDir = args[0];
-		//String pathDir2 = args[1];
+		File pathDir2 = new File(args[1]);
 		File dataDir = new File(args[0]);
-		File outFile = new File(args[1]);
+		File outFile = new File(args[2]);
 		
 		WordCounter wordCounter = new WordCounter();
 		System.out.println("Hello");
 		try{
 			wordCounter.parseDir(pathDir);
-			//wordCounter.parseDir(pathDir2);
+			//wordCounter.parseFile(dataDir);
+			wordCounter.parseFileProb(pathDir2);
+
+
+
 		}catch(FileNotFoundException e){
 			System.err.println("Invalid input dir: " + dataDir.getAbsolutePath());
 			e.printStackTrace();
