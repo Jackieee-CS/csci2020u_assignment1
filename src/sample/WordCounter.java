@@ -90,7 +90,7 @@ public class WordCounter{
 							hamCounts.putAll(wordCounts);
 							//System.out.println("Size of hamCounts is" + hamCounts.size());
 						}
-						else if(x == 1 && dirs.contains("ham")){
+						else if(x == 1 && dirs.contains("ham2")){
 							File current = new File(pathToDir+dirs);
 							hamSize += current.list().length;
 							System.out.println("The Current path is " + pathToDir + dirs);
@@ -143,6 +143,14 @@ public class WordCounter{
 
 		}
 
+/*
+		for (Map.Entry<String, Double> word : mergedHamProb.entrySet()) {
+			String key = word.getKey();
+			double value = word.getValue();
+			System.out.println("The key is " + key + " and the probability is " + df.format(value));
+		}
+*/
+
 		Set<String> spamSet = spamCounts.keySet();
 		Iterator<String> spamIterator = spamSet.iterator();
 		while (spamIterator.hasNext()) {
@@ -157,7 +165,13 @@ public class WordCounter{
 
 		}
 
-
+/*
+		for (Map.Entry<String, Double> word : spamProb.entrySet()) {
+			String key = word.getKey();
+			double value = word.getValue();
+			System.out.println("The key is " + key + " and the probability is " + df.format(value));
+		}
+*/
 		probWisSpam.putAll(mergedHamProb);
 		Set<String> probWisSpamSet = probWisSpam.keySet();
 		Iterator<String> probWisIterator = probWisSpamSet.iterator();
@@ -167,7 +181,7 @@ public class WordCounter{
 				double prob = spamProb.get(key) / (spamProb.get(key) + probWisSpam.get(key));
 				//System.out.println("PrSW is " + df.format(prob));
 				probWisSpam.put(key, prob);
-			}else if (probWisSpam.containsKey(key) && !spamProb.containsKey(key)){
+			}else if (probWisSpam.containsKey(key) && (!spamProb.containsKey(key))){
 				probWisSpam.put(key, 0.0);
 			}else {
 				probWisSpam.put(key, 1.0);
@@ -179,7 +193,7 @@ public class WordCounter{
 /*
 		for (Map.Entry<String, Double> word : probWisSpam.entrySet()) {
 			String key = word.getKey();
-			Double value = word.getValue();
+			double value = word.getValue();
 			System.out.println("The key is " + key + " and the probability is " + df.format(value));
 		}
 */
@@ -223,6 +237,9 @@ public class WordCounter{
 			}
 		}else{
 			Scanner scanner2 = new Scanner(file);
+			prSF = 0;
+			n = 0;
+			System.out.println("Current file is " + file.toString());
 			// scanning token by token
 			Set<String> keys = new HashSet<>();
 			while (scanner2.hasNext()){
@@ -248,7 +265,7 @@ public class WordCounter{
 	// The math is incorrect I believe
 
 	private void calcProb(Set keys){
-		prSF = 0;
+		//prSF = 0;
 		Iterator<String> keyIterator = keys.iterator();
 		while(keyIterator.hasNext()) {
 			String key = keyIterator.next();
@@ -256,9 +273,9 @@ public class WordCounter{
 				if(probWisSpam.get(key) == 0){
 
 				}else{
-					System.out.println("ProbwiSpam at this key is " + probWisSpam.get(key));
+					//System.out.println("ProbwiSpam at key is " + key + " " + probWisSpam.get(key));
 					n += Math.log(1-(probWisSpam.get(key))) - Math.log(probWisSpam.get(key));
-					System.out.println("doing big math n is " + n);
+					//System.out.println("doing big math n is " + n);
 				}
 
 			}
@@ -268,8 +285,44 @@ public class WordCounter{
 
 	}
 
+	/*   public ArrayList<TestFile> loopFolder(File folder, Map<String, Double> map) throws IOException {
+        ArrayList<TestFile> testFileList = new ArrayList<>();
+        String actualClass = folder.getName();
+        if(folder.isDirectory()){
+            //parse each file inside the directory
+            File[] content = folder.listFiles();
+//            System.out.println(content.length);
+            for(File current: content){
+                testFileList.add(test(current,map,actualClass));
+            }
+        } else {
+            return null;
+        }
+        return testFileList;
+    }
+}
+*/
+	 */
 
 
+/*
+	//calculate and print the accuracy and precision
+	double numTrue = 0;
+	double numFalsePos = 0;
+	double numTruePos = 0;
+        for (TestFile entry:testFiles) {
+		String actualClass = entry.getActualClass();
+		double prob = entry.getRawProb();
+		if(actualClass.equals("ham") && prob < 0.5){
+			numTrue++;
+		} if (actualClass.equals("spam") && prob > 0.5){
+			numTrue++;
+			numTruePos++;
+		} if(actualClass.equals("ham") && prob > 0.5){
+			numFalsePos++;
+		}
+	}
+*/
 	private void countWord(Set keys){
 		Iterator<String> keyIterator = keys.iterator();
 		while(keyIterator.hasNext()){
