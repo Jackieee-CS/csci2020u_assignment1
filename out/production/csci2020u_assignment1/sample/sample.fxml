@@ -3,6 +3,21 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TextField?>
 <GridPane fx:controller="sample.Controller"
           xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+
+    <TableView fx:id="tableView" GridPane.columnIndex="0" GridPane.rowIndex="0">
+        <columns>
+            <TableColumn fx:id="file" text="File"></TableColumn>
+            <TableColumn fx:id="actualClass" text="Actual Class"></TableColumn>
+            <TableColumn fx:id="spamProb" text="Spam Probability"></TableColumn>
+        </columns>
+    </TableView>
+    <TextField fx:id="accuracy" text="Accuracy" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="precision" text="Precision" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+
+
 </GridPane>
