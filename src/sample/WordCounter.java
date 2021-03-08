@@ -275,7 +275,7 @@ public class WordCounter{
 				}else{
 					//System.out.println("ProbwiSpam at key is " + key + " " + probWisSpam.get(key));
 					n += Math.log(1-(probWisSpam.get(key))) - Math.log(probWisSpam.get(key));
-					//System.out.println("doing big math n is " + n);
+					System.out.println("doing big math n is " + n);
 				}
 
 			}
@@ -302,7 +302,6 @@ public class WordCounter{
     }
 }
 */
-	 */
 
 
 /*
