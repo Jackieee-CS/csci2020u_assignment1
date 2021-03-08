@@ -1,6 +1,10 @@
 package sample;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.*;
+import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,10 +16,33 @@ import java.util.stream.Collectors;
 public class WordCounter{
 	
 	private Map<String, Integer> wordCounts;
-	
+	TreeMap<String, Integer> hamCounts = new TreeMap<String, Integer>();
+	TreeMap<String, Integer> ham2Counts = new TreeMap<String, Integer>();
+	TreeMap<String, Integer> spamCounts = new TreeMap<String, Integer>();
+
+
 	public WordCounter(){
 		wordCounts = new TreeMap<>();
 	}
+
+	private TreeMap<String, Integer> merge(TreeMap<String, Integer> ham, TreeMap<String, Integer> ham2) {
+		TreeMap<String, Integer> mergedMap = new TreeMap<String, Integer>();
+		Set<String> keysHam2 = ham2.keySet();
+		Iterator<String> Ham2Iterator = keysHam2.iterator();
+		while (Ham2Iterator.hasNext()) {
+			String key = Ham2Iterator.next();
+			int count2 = ham2.get(key);
+			if (ham.containsKey(key)) {
+				int count1 = ham.get(key);
+				mergedMap.put(key, count1 + count2);
+			} else {
+				mergedMap.put(key, 1);
+			}
+		}
+
+		return mergedMap;
+	}
+
 
 	// Written code to individually parse seperate directories within one folder, and generate different output.txt's per directory
 	public void parseDir(String pathToDir) throws IOException{
@@ -30,7 +57,6 @@ public class WordCounter{
 			int x = 0;
 
 			for(Path path : result){
-				System.out.println("value of x is " + x);
 				System.out.println("Current File Path is " + path.toString());
 				File currentDir = new File(path.toString());
 				String[] dirNames = currentDir.list();
@@ -44,23 +70,159 @@ public class WordCounter{
 						// Edit this section if you have your own ideas of what you want to do with the sub-directions!!!
 						// --------------------- IMPORTANT -------------------
 
-						File current = new File(pathToDir+dirs);
-						System.out.println("The Current path is " + pathToDir + dirs);
-						parseFile(current);
-						File outDir = new File (pathToDir+dirs+".txt");
-						System.out.println("Output file is " + pathToDir+dirs+".txt");
-						outputWordCount(1, outDir);
+						if(x == 0) {
+							File current = new File(pathToDir + dirs);
+							System.out.println("The Current path is " + pathToDir + dirs);
+							wordCounts.clear();
+							parseFile(current);
+							File outDir = new File(pathToDir + dirs + ".txt");
+							System.out.println("Output file is " + pathToDir + dirs + ".txt");
+							outputWordCount(1, outDir);
+							//System.out.println("Size of wordCounts is " + wordCounts.size());
+							hamCounts.putAll(wordCounts);
+							//System.out.println("Size of hamCounts is" + hamCounts.size());
+						}
+						else if(x == 1){
+							File current = new File(pathToDir+dirs);
+							System.out.println("The Current path is " + pathToDir + dirs);
+							wordCounts.clear();
+							parseFile(current);
+							File outDir = new File (pathToDir+dirs+".txt");
+							System.out.println("Output file is " + pathToDir+dirs+".txt");
+							outputWordCount(1, outDir);
+							//System.out.println("Size of wordCounts is " + wordCounts.size());
+							ham2Counts.putAll(wordCounts);
+							//System.out.println("Size of ham2Counts is " + ham2Counts.size());
+
+						}
+						else{
+							File current = new File(pathToDir+dirs);
+							System.out.println("The Current path is " + pathToDir + dirs);
+							wordCounts.clear();
+							parseFile(current);
+							File outDir = new File (pathToDir+dirs+".txt");
+							System.out.println("Output file is " + pathToDir+dirs+".txt");
+							outputWordCount(1, outDir);
+							//System.out.println("Size of wordCounts is " + wordCounts.size());
+							spamCounts.putAll(wordCounts);
+							//System.out.println("Size of spamCounts is " + spamCounts.size());
+						}
+						x++;
 					}
 				}
 
 
-				x++;
+
 			}
 
 
 		}
 
+		TreeMap<String, Integer> mergedHam = merge(hamCounts,ham2Counts);
+		int totalHamCount = hamCounts.size()+ham2Counts.size();
+		TreeMap<String, Double> mergedHamProb = new TreeMap<String, Double>();
+
+		System.out.println("TotalHamCount is" + totalHamCount);
+
+		Set<String> mergedHamSet = mergedHam.keySet();
+		Iterator<String> mergedHamIterator = mergedHamSet.iterator();
+		while (mergedHamIterator.hasNext()) {
+			String key = mergedHamIterator.next();
+			if(mergedHam.containsKey(key)){
+				int previous = mergedHam.get(key);
+				//System.out.println("Previous value is " + previous);
+				//System.out.println("TOTAL HAM COUNT IS " + totalHamCount);
+				DecimalFormat df = new DecimalFormat("0.00000");
+				double prob = (double) previous/totalHamCount;
+				//System.out.println("Merged HAM Probability is " + df.format(prob));
+				mergedHamProb.put(key, prob);
+			}else{
+				mergedHamProb.put(key, 1.0);
+			}
+
+		}
+
+		TreeMap<String, Double> spamProb = new TreeMap<String, Double>();
+
+		Set<String> spamSet = spamCounts.keySet();
+		Iterator<String> spamIterator = spamSet.iterator();
+		while (spamIterator.hasNext()) {
+			String key = spamIterator.next();
+			if(spamCounts.containsKey(key)){
+				int previous = spamCounts.get(key);
+				//System.out.println("Previous value is " + previous);
+				//System.out.println("TOTAL HAM COUNT IS " + totalHamCount);
+				DecimalFormat df = new DecimalFormat("0.00000");
+				double prob = (double) previous/spamCounts.size();
+				//System.out.println("SPAM Probability is " + df.format(prob));
+				spamProb.put(key, prob);
+			}else{
+				spamProb.put(key, 1.0);
+			}
+
+		}
+
+
+		/*
+		TreeMap<String, Double> probWisSpam = new TreeMap<String, Double>();
+		probWisSpam
+
+		while (mergedHamIterator.hasNext()) {
+			String key = mergedHamIterator.next();
+			if(mergedHam.containsKey(key)){
+				int previous = mergedHam.get(key);
+				//System.out.println("Previous value is " + previous);
+				//System.out.println("TOTAL HAM COUNT IS " + totalHamCount);
+				DecimalFormat df = new DecimalFormat("0.00000");
+				double prob = (double) previous/totalHamCount;
+				//System.out.println("Merged HAM Probability is " + df.format(prob));
+				mergedHamProb.put(key, prob);
+			}else{
+				mergedHamProb.put(key, 1.0);
+			}
+
+		}
+
+
+		private TreeMap<String, Integer> merge(TreeMap<String, Integer> ham, TreeMap<String, Integer> ham2) {
+			TreeMap<String, Integer> mergedMap = new TreeMap<String, Integer>();
+			Set<String> keysHam2 = ham2.keySet();
+			Iterator<String> Ham2Iterator = keysHam2.iterator();
+			while (Ham2Iterator.hasNext()) {
+				String key = Ham2Iterator.next();
+				int count2 = ham2.get(key);
+				if (ham.containsKey(key)) {
+					int count1 = ham.get(key);
+					mergedMap.put(key, count1 + count2);
+				} else {
+					mergedMap.put(key, 1);
+				}
+			}
+
+
+		*/
+
+
+
+
+
+/*
+		for (Map.Entry<String, Double> word : mergedHamProb.entrySet()) {
+			String key = word.getKey();
+			Double value = word.getValue();
+			System.out.println("The key is " + key + " and the occurence is " + value);
+		}
+*/
+
 	}
+/*
+	public void getProb(Set<String> probMap){
+		double n = 0;
+		for(int i = 0; i < probMap.size(); i++){
+			n += (Math.log((1-prSW)) - Math.log(prSW))
+		}
+	}
+*/
 
 
 	public void parseFile(File file) throws IOException{
@@ -95,7 +257,6 @@ public class WordCounter{
 	
 	private void countWord(Set keys){
 		Iterator<String> keyIterator = keys.iterator();
-		int sum;
 		while(keyIterator.hasNext()){
 			String key = keyIterator.next();
 			if(wordCounts.containsKey(key)){
@@ -103,7 +264,6 @@ public class WordCounter{
 				wordCounts.put(key, previous+1);
 			}else{
 				wordCounts.put(key, 1);
-
 			}
 		}
 
@@ -119,6 +279,7 @@ public class WordCounter{
 				PrintWriter fileOutput = new PrintWriter(output);
 
 				Set<String> keys = wordCounts.keySet();
+				System.out.println("Currently writing file for " + output.toString() + "The wordCount for this is " + wordCounts.size());
 				Iterator<String> keyIterator = keys.iterator();
 				while(keyIterator.hasNext()){
 					String key = keyIterator.next();
@@ -147,16 +308,12 @@ public class WordCounter{
 
 		String pathDir = args[0];
 		File dataDir = new File(args[0]);
-		//File dataDir2 = new File(args[1]);
-		//File dataDir3 = new File(args[2]);
 		File outFile = new File(args[1]);
 		
 		WordCounter wordCounter = new WordCounter();
 		System.out.println("Hello");
 		try{
 			wordCounter.parseDir(pathDir);
-			//wordCounter.parseFile(dataDir);
-			//wordCounter.outputWordCount(1, outFile);
 		}catch(FileNotFoundException e){
 			System.err.println("Invalid input dir: " + dataDir.getAbsolutePath());
 			e.printStackTrace();
