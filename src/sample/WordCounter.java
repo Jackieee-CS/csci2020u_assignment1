@@ -22,9 +22,12 @@ public class WordCounter{
 	TreeMap<String, Double> mergedHamProb = new TreeMap<String, Double>();
 	TreeMap<String, Double> probWisSpam = new TreeMap<String, Double>();
 	TreeMap<String, Double> spamProb = new TreeMap<String, Double>();
+	ArrayList<TestFile> testFileList = new ArrayList<>();
 	DecimalFormat df = new DecimalFormat("0.00000");
+	String lastDir = "";
 	double prSF = 0;
 	double n = 0;
+	double fileCount = 0;
 	int hamSize = 0;
 	int spamSize = 0;
 
@@ -51,6 +54,12 @@ public class WordCounter{
 
 		return mergedMap;
 	}
+
+	public double returnFileAmount(){
+		return fileCount;
+	}
+
+
 
 	// Written code to individually parse seperate directories within one folder, and generate different output.txt's per directory
 	public void parseDir(String pathToDir) throws IOException{
@@ -230,6 +239,7 @@ public class WordCounter{
 	public void parseFileProb(File file) throws IOException{
 		//System.out.println("Starting parsing the file:" + file.getAbsolutePath());
 		if(file.isDirectory()){
+			lastDir = file.getName();
 			//parse each file inside the directory
 			File[] content = file.listFiles();
 			for(File current: content){
@@ -237,6 +247,7 @@ public class WordCounter{
 			}
 		}else{
 			Scanner scanner2 = new Scanner(file);
+			fileCount++;
 			prSF = 0;
 			n = 0;
 			System.out.println("Current file is " + file.toString());
@@ -248,7 +259,9 @@ public class WordCounter{
 					keys.add(token);
 				}
 			}
-			calcProb(keys);
+			double prob = calcProb(keys);
+			TestFile temp = new TestFile(file.toString(), prob, lastDir);
+			testFileList.add(temp);
 			//System.out.println("File " + file.toString() + " has a prSF of" + df.format(prSF));
 		}
 	}
@@ -260,11 +273,13 @@ public class WordCounter{
 			
 	}
 
-
+	public ArrayList<TestFile> returnTestFileList(){
+		return testFileList;
+	}
 	// This section Needs work
 	// The math is incorrect I believe
 
-	private void calcProb(Set keys){
+	private double calcProb(Set keys){
 		//prSF = 0;
 		Iterator<String> keyIterator = keys.iterator();
 		while(keyIterator.hasNext()) {
@@ -275,53 +290,17 @@ public class WordCounter{
 				}else{
 					//System.out.println("ProbwiSpam at key is " + key + " " + probWisSpam.get(key));
 					n += Math.log(1-(probWisSpam.get(key))) - Math.log(probWisSpam.get(key));
-					System.out.println("doing big math n is " + n);
+					//System.out.println("doing big math n is " + n);
 				}
 
 			}
 		}
 		prSF = 1/(1+( Math.pow(Math.E,n)));
-		System.out.println("calculated PRSF is " + prSF);
+		//System.out.println("calculated PRSF is " + prSF);
+		return prSF;
 
 	}
 
-	/*   public ArrayList<TestFile> loopFolder(File folder, Map<String, Double> map) throws IOException {
-        ArrayList<TestFile> testFileList = new ArrayList<>();
-        String actualClass = folder.getName();
-        if(folder.isDirectory()){
-            //parse each file inside the directory
-            File[] content = folder.listFiles();
-//            System.out.println(content.length);
-            for(File current: content){
-                testFileList.add(test(current,map,actualClass));
-            }
-        } else {
-            return null;
-        }
-        return testFileList;
-    }
-}
-*/
-
-
-/*
-	//calculate and print the accuracy and precision
-	double numTrue = 0;
-	double numFalsePos = 0;
-	double numTruePos = 0;
-        for (TestFile entry:testFiles) {
-		String actualClass = entry.getActualClass();
-		double prob = entry.getRawProb();
-		if(actualClass.equals("ham") && prob < 0.5){
-			numTrue++;
-		} if (actualClass.equals("spam") && prob > 0.5){
-			numTrue++;
-			numTruePos++;
-		} if(actualClass.equals("ham") && prob > 0.5){
-			numFalsePos++;
-		}
-	}
-*/
 	private void countWord(Set keys){
 		Iterator<String> keyIterator = keys.iterator();
 		while(keyIterator.hasNext()){
@@ -382,8 +361,58 @@ public class WordCounter{
 		System.out.println("Hello");
 		try{
 			wordCounter.parseDir(pathDir);
-			//wordCounter.parseFile(dataDir);
 			wordCounter.parseFileProb(pathDir2);
+
+
+			// IMPORTANT !!
+			// THIS IS THE TEST FILE THAT CONTAINS THE OUTPUT ARRAY LIST WITH EVERY SINGLE FILE,
+			// THE FORMAT IS STRING FILENAME, DOUBLE SPAM PROB, STRING DIRECTORY ITS CONTAINED IN
+			// RETRIEVE THEIR CORRESPONDING INFO VIA THE METHODS IN TESTFILE
+			ArrayList<TestFile> testFile = wordCounter.returnTestFileList();
+
+
+
+
+			double fileCount = wordCounter.returnFileAmount();
+
+
+			// FOR UI
+			// Maybe within this loop, update the tableview in FXML or something(?)
+
+			for(int i = 0;i < testFile.size(); i++){
+
+				System.out.println("The File Name is " + testFile.get(i).getFilename() + " and the probability is " +
+						testFile.get(i).getSpamProbability() + " the directory it was found in was " + testFile.get(i).getActualClass());
+			}
+
+			//calculate and print the accuracy and precision
+			double numTrueNegative = 0; // File was in "ham" and prob < threshold
+			double numFalsePos = 0; // File was in "ham" and prob > threshold
+			double numTruePos = 0; // File was in "spam" and prob > threshold
+			double threshold = 0.5; // EDIT THIS BY % OF SPAM THRESHOLD (BASE IS 50% PROB = 50% SPAM)
+			for (TestFile entry: testFile) {
+				String actualClass = entry.getActualClass();
+				double prob = entry.getSpamProbability();
+				if(actualClass.equals("ham") && prob < threshold){
+					numTrueNegative++;
+				} if (actualClass.equals("spam") && prob > threshold){
+					numTruePos++;
+				} if(actualClass.equals("ham") && prob > threshold){
+					numFalsePos++;
+				}
+			}
+
+
+			// These systemOuts are for testing output
+			System.out.println("numTrue was " + numTrueNegative);
+			System.out.println("numFalsePos was " + numFalsePos);
+			System.out.println("numTruePos was " + numTruePos);
+
+			double accuracy = (numTruePos+numTrueNegative) / fileCount;
+			double precision = numTruePos/(numFalsePos + numTruePos);
+
+			System.out.println("Accuracy was " + accuracy);
+			System.out.println("Precision was " + precision);
 
 
 
