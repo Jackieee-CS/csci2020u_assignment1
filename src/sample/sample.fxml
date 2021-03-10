@@ -1,3 +1,4 @@
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.GridPane?>
 
@@ -9,15 +10,18 @@
 <GridPane fx:controller="sample.Controller"
           xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
 
-    <TableView fx:id="tableView" GridPane.columnIndex="0" GridPane.rowIndex="0">
+    <TableView fx:id="tableView" GridPane.columnIndex="0" GridPane.rowIndex="0" minWidth="1200" minHeight="600">
         <columns>
-            <TableColumn fx:id="file" text="File"></TableColumn>
-            <TableColumn fx:id="actualClass" text="Actual Class"></TableColumn>
-            <TableColumn fx:id="spamProb" text="Spam Probability"></TableColumn>
+            <TableColumn fx:id="fileColumn" text="File"></TableColumn>
+            <TableColumn fx:id="actualClassColumn" text="Actual Class"></TableColumn>
+            <TableColumn fx:id="spamProbColumn" text="Spam Probability"></TableColumn>
         </columns>
     </TableView>
-    <TextField fx:id="accuracy" text="Accuracy" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="precision" text="Precision" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+
+    <Label fx:id="accuracy" text="Accuracy:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+    <TextField fx:id="accuracyNum" text="" GridPane.columnIndex="0" GridPane.rowIndex="2" maxWidth = "200"/>
+    <Label fx:id="precision" text="Precision:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+    <TextField fx:id="precisionNum" text="" GridPane.columnIndex="0" GridPane.rowIndex="4" maxWidth="200"/>
 
 
 </GridPane>

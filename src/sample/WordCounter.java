@@ -25,6 +25,7 @@ public class WordCounter{
 	ArrayList<TestFile> testFileList = new ArrayList<>();
 	DecimalFormat df = new DecimalFormat("0.00000");
 	String lastDir = "";
+	String currentDir = "";
 	double prSF = 0;
 	double n = 0;
 	double fileCount = 0;
@@ -74,7 +75,7 @@ public class WordCounter{
 			int x = 0;
 
 			for(Path path : result){
-				System.out.println("Current File Path is " + path.toString());
+				//System.out.println("Current File Path is " + path.toString());
 				File currentDir = new File(path.toString());
 				String[] dirNames = currentDir.list();
 				// Checks for if directories are directories, and if true, does some stuff to them
@@ -89,7 +90,7 @@ public class WordCounter{
 						if(x == 0 && dirs.contains("ham")) {
 							File current = new File(pathToDir + dirs);
 							hamSize += current.list().length;
-							System.out.println("The Current path is " + pathToDir + dirs);
+							//System.out.println("The Current path is " + pathToDir + dirs);
 							wordCounts.clear();
 							parseFile(current);
 							File outDir = new File(pathToDir + dirs + ".txt");
@@ -102,7 +103,7 @@ public class WordCounter{
 						else if(x == 1 && dirs.contains("ham2")){
 							File current = new File(pathToDir+dirs);
 							hamSize += current.list().length;
-							System.out.println("The Current path is " + pathToDir + dirs);
+							//System.out.println("The Current path is " + pathToDir + dirs);
 							wordCounts.clear();
 							parseFile(current);
 							File outDir = new File (pathToDir+dirs+".txt");
@@ -116,7 +117,7 @@ public class WordCounter{
 						else{
 							File current = new File(pathToDir+dirs);
 							spamSize += current.list().length;
-							System.out.println("The Current path is " + pathToDir + dirs);
+							//System.out.println("The Current path is " + pathToDir + dirs);
 							wordCounts.clear();
 							parseFile(current);
 							File outDir = new File (pathToDir+dirs+".txt");
@@ -198,7 +199,7 @@ public class WordCounter{
 		}
 
 
-		System.out.println("The size of ProbWisSpam is " + probWisSpam.size());
+		//System.out.println("The size of ProbWisSpam is " + probWisSpam.size());
 /*
 		for (Map.Entry<String, Double> word : probWisSpam.entrySet()) {
 			String key = word.getKey();
@@ -243,6 +244,7 @@ public class WordCounter{
 			//parse each file inside the directory
 			File[] content = file.listFiles();
 			for(File current: content){
+				currentDir = current.getName();
 				parseFileProb(current);
 			}
 		}else{
@@ -250,7 +252,7 @@ public class WordCounter{
 			fileCount++;
 			prSF = 0;
 			n = 0;
-			System.out.println("Current file is " + file.toString());
+			//System.out.println("Current file is " + file.toString());
 			// scanning token by token
 			Set<String> keys = new HashSet<>();
 			while (scanner2.hasNext()){
@@ -260,7 +262,7 @@ public class WordCounter{
 				}
 			}
 			double prob = calcProb(keys);
-			TestFile temp = new TestFile(file.toString(), prob, lastDir);
+			TestFile temp = new TestFile(currentDir, prob, lastDir);
 			testFileList.add(temp);
 			//System.out.println("File " + file.toString() + " has a prSF of" + df.format(prSF));
 		}
@@ -316,8 +318,8 @@ public class WordCounter{
 	}
 	
 	public void outputWordCount(int minCount, File output) throws IOException{
-		System.out.println("Saving word counts to file:" + output.getAbsolutePath());
-		System.out.println("Total words:" + wordCounts.keySet().size());
+		//System.out.println("Saving word counts to file:" + output.getAbsolutePath());
+		//System.out.println("Total words:" + wordCounts.keySet().size());
 		
 		if (!output.exists()){
 			output.createNewFile();
@@ -325,7 +327,7 @@ public class WordCounter{
 				PrintWriter fileOutput = new PrintWriter(output);
 
 				Set<String> keys = wordCounts.keySet();
-				System.out.println("Currently writing file for " + output.toString() + "The wordCount for this is " + wordCounts.size());
+				//System.out.println("Currently writing file for " + output.toString() + "The wordCount for this is " + wordCounts.size());
 				Iterator<String> keyIterator = keys.iterator();
 				while(keyIterator.hasNext()){
 					String key = keyIterator.next();
@@ -358,7 +360,7 @@ public class WordCounter{
 		File outFile = new File(args[2]);
 		
 		WordCounter wordCounter = new WordCounter();
-		System.out.println("Hello");
+		//System.out.println("Hello");
 		try{
 			wordCounter.parseDir(pathDir);
 			wordCounter.parseFileProb(pathDir2);
@@ -378,13 +380,13 @@ public class WordCounter{
 
 			// FOR UI
 			// Maybe within this loop, update the tableview in FXML or something(?)
-
+			/*
 			for(int i = 0;i < testFile.size(); i++){
 
 				System.out.println("The File Name is " + testFile.get(i).getFilename() + " and the probability is " +
 						testFile.get(i).getSpamProbability() + " the directory it was found in was " + testFile.get(i).getActualClass());
 			}
-
+			*/
 			//calculate and print the accuracy and precision
 			double numTrueNegative = 0; // File was in "ham" and prob < threshold
 			double numFalsePos = 0; // File was in "ham" and prob > threshold
@@ -414,6 +416,7 @@ public class WordCounter{
 			System.out.println("Accuracy was " + accuracy);
 			System.out.println("Precision was " + precision);
 
+			//ObservableList<TestFile> Files = FXCollections.observableArrayList(testFile);
 
 
 		}catch(FileNotFoundException e){
