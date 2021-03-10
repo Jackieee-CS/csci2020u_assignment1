@@ -7,5 +7,7 @@ Group Members:
 Jackson Chen 100756909
 Joshua Zak 100753237
 
-To run WordCounter -> In IntelliJ IDE, under Run conditions -> select WordcountMain -> in problem arguments arg1 = path to folder, and arg2 = output.txt 
+To Ensure FXML works on your machine, install java SDK 11 or higher, and remember to add it in your VM-options as well as project settings for the library.
+
+Runlog is a log output of the console, and outputs from wordcounter are found in the train folder.
 
